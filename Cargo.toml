@@ -1,0 +1,12 @@
+[package]
+name = "research-usaddress"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+crfs = "0.2.0"
+lazy_static = "1.4.0"
+regex = "1.10.2"
+serde = {version="1.0",  features = ["derive"]}
+serde_json = "1.0"

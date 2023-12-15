@@ -1,0 +1,6 @@
+/target
+*.crfsuite
+*.whl
+*.db
+src/attributes.txt
+__pycache__

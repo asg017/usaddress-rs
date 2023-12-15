@@ -1,0 +1,12 @@
+[package]
+name = "sqlite-usaddress"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlite-loadable = "0.0.6-alpha.6"
+usaddress = {path="../usaddress-lib"}
+serde_json = "1.0"
+
+[lib]
+crate-type=["lib", "cdylib", "staticlib"]

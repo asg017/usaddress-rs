@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>usaddress-wasm example</title>
+
+  </head>
+  <body>
+    <input id="input" type="text"/>
+    <pre id="output"></pre>
+    <pre id="timing"></pre>
+    <script type="module">
+      import init, { parse } from "./pkg/usaddress_web.js";
+      init().then(() => {
+        const inputElement = document.querySelector('#input');
+        const outputElement = document.querySelector('#output');
+        const timingElement = document.querySelector('#timing');
+        inputElement.addEventListener('input', e => {
+          const start = performance.now();
+          const result = parse(e.target.value);
+          const elapsed = performance.now() - start;
+          try {
+            outputElement.textContent = JSON.stringify(JSON.parse(result), null, 2);
+          }catch {
+            outputElement.textContent = result;
+          }
+          timingElement.textContent = `${elapsed.toFixed(2)}ms`
+
+
+        })
+      });
+    </script>
+  </body>
+</html>

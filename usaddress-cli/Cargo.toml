@@ -1,0 +1,7 @@
+[package]
+name = "usaddress-cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+usaddress = {path="../usaddress-lib"}

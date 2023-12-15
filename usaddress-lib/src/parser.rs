@@ -204,12 +204,20 @@ pub struct Parser<'a> {
     model: crfs::Model<'a>,
 }
 
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ParseError {
+    #[error("unknown model error")]
+    TagError,
+}
+
 impl Parser<'_> {
-    pub fn parse(&mut self, input: &str) -> Result<ParsedAddress, ()> {
-        let mut tagger = self.model.tagger().unwrap();
+    pub fn parse(&mut self, input: &str) -> Result<ParsedAddress, ParseError> {
+        let mut tagger = self.model.tagger().map_err(|_| ParseError::TagError)?;
         let tokens = tokenize(input);
         let features = tokens_to_features(&tokens);
-        let result = tagger.tag(&features).unwrap();
+        let result = tagger.tag(&features).map_err(|_| ParseError::TagError)?;
         let mut addr = ParsedAddress::default();
         for (token, label) in tokens.iter().zip(result) {
             match label {
@@ -252,7 +260,7 @@ impl Parser<'_> {
 
 impl<'a> Default for Parser<'a> {
     fn default() -> Self {
-        let model = crfs::Model::new(include_bytes!("../usaddress/usaddr.crfsuite")).unwrap();
+        let model = crfs::Model::new(include_bytes!("./usaddr.crfsuite")).unwrap();
         Self { model }
     }
 }
@@ -329,12 +337,8 @@ fn token_features(token: &str) -> Vec<Attribute> {
         abbrev
             .chars()
             .find(|c| VOWELS_LOOKUP.contains(c))
-            .map_or(0.0, |v| 1.0),
+            .map_or(0.0, |_v| 1.0),
     ));
-    for f in features.as_slice() {
-        print!("{}={} ", f.name, f.value)
-    }
-    println!();
     features
 }
 
@@ -358,6 +362,8 @@ fn digit(token: &str) -> DigitResult {
     }
 }
 
+// thank god for https://users.rust-lang.org/t/iterator-over-mutable-windows-of-slice/17110/4
+// TODO can panic?
 fn windows_mut_each<T>(v: &mut [T], n: usize, mut f: impl FnMut(&mut [T])) {
     let mut start = 0;
     let mut end = n;
@@ -368,7 +374,7 @@ fn windows_mut_each<T>(v: &mut [T], n: usize, mut f: impl FnMut(&mut [T])) {
     }
 }
 
-fn tokens_to_features(address_tokens: &Vec<String>) -> Vec<Vec<Attribute>> {
+fn tokens_to_features(address_tokens: &[String]) -> Vec<Vec<Attribute>> {
     let mut base: Vec<Vec<Attribute>> = address_tokens
         .iter()
         .map(|token| token_features(token))
